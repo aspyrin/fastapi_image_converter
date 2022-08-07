@@ -33,16 +33,6 @@ class Message(BaseModel):
         return value
 
 
-def allowed_file(filename: str) -> bool:
-    """
-    function check allowed extensions
-    :param filename:
-    :return: bool
-    """
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
-
 @app.get("/")
 async def root():
     return ROOT_MESSAGE
