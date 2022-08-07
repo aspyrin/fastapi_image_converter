@@ -1,6 +1,6 @@
-from fastapi import FastAPI, File
+from fastapi import FastAPI, File, HTTPException, status
 from fastapi.responses import StreamingResponse
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 
 app = FastAPI()
@@ -17,18 +17,25 @@ async def root():
 @app.post("/convert-to-grayscale")
 async def convert_to_grayscale(file: bytes = File()):
     """
-    POST, function receives file, check filename, check extension,
+    POST, function receives image-file, check filename, check extension,
     convert image to grayscale and return it as image/png
+    :param request:
     :param file:
     :return: edited image in initial format
     """
 
     # file size validation
     if len(file) > 0:
-
-        # create PIL object and define it format
-        image_source = Image.open(BytesIO(file))
-        image_format = image_source.format
+        # create PIL object and define it formate
+        try:
+            image_source = Image.open(BytesIO(file))
+            image_format = image_source.format
+        except UnidentifiedImageError as e:
+            return HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                headers={"X-Error": "Bad Request. Check your file"},
+            )
 
         # convert image greyscale
         image_edited = image_source.convert("L")
